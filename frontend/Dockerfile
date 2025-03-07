@@ -11,6 +11,8 @@ RUN apk add --no-cache libc6-compat git
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
+RUN npm install -g pnpm 
+
 RUN corepack enable
 RUN corepack prepare pnpm@latest --activate
 
@@ -26,13 +28,15 @@ RUN corepack enable
 RUN corepack enable pnpm
 RUN corepack prepare pnpm@latest --activate
 
+
+
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 
-
+RUN pnpm build
 FROM base AS runner
 
 # Set NODE_ENV to production
@@ -45,4 +49,5 @@ ENV PORT 5173
 ENV HOSTNAME "0.0.0.0"
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ "wget", "-q0", "http://localhost:5173/health" ]
 
-RUN pnpm build
+
+CMD [ "pnpm", "dev" ]
